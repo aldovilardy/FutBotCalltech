@@ -9,13 +9,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bluebird": "^3.5.1",
     "botbuilder": "^3.14.1",
     "botbuilder-azure": "^3.0.4",
     "email-validator": "^2.0.3",
+    "request-promise": "^4.2.2",
     "restify": "^5.2.1"
   },
   "devDependencies": {
-    "request": "^2.81.0",
+    "request": "^2.85.0",
     "zip-folder": "^1.0.0"
   },
   "repository": {

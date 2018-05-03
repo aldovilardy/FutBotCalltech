@@ -6,6 +6,9 @@ var restify = require('restify');
 var builder = require('botbuilder');
 var botbuilder_azure = require("botbuilder-azure");
 var emailvalidator = require("email-validator");
+var Promise = require('bluebird');
+var request = require('request-promise').defaults({ encoding: null });
+var request = require("request");
 
 // Setup Restify Server
 var server = restify.createServer();
@@ -46,7 +49,7 @@ bot.dialog('/', [
     },
     function (session, results) {
         session.userData.name = results.response;
-        session.beginDialog('/preguntarEmail');
+        session.beginDialog('/askEmail');
     },
     function (session, results) {
         session.userData.email = results.response;
@@ -54,13 +57,76 @@ bot.dialog('/', [
         //builder.Prompts.choice(session, "What language do you code Node using?", ["JavaScript", "CoffeeScript", "TypeScript"]);
     },
     function (session, results) {
-        session.userData.photoUrl = `${results.response[0].contentUrl}${results.response[0].name}`;
-        session.send("Tengo estos datos... " + session.userData.name +
-            " tu correo electronico es " + session.userData.email +
-            " y la url de la imagen que me enviaste es " + session.userData.photoUrl);
+        //session.userData.photo.photo.url = `${results.response[0].contentUrl}`;
+        session.userData.photoDownload = checkRequiresToken(session.message)
+            ? requestWithToken(session.message.attachments[0].contentUrl)
+            : request(session.message.attachments[0].contentUrl);
+        // Test message By Aldo
+        session.send(`Mi misión es prepararte para el Mundial Rusia 2018.`);
+        // Loading the Random Panini Stickers
+        var options = {
+            method: 'GET',
+            url: 'http://localhost:41731/api/EtiquetasAleatorias',
+            headers:
+                { 'Cache-Control': 'no-cache' }
+        };
+        var cards = [];
+        request(options, function (error, response, body) {
+            if (error) throw new Error(error);
+            else {
+                session.userData.ramdomStickers = JSON.parse(body);
+                console.log(`Loading the ${session.userData.ramdomStickers.length} Random Panini Stickers: \n${body}`);
+            }
+        });
+        session.beginDialog('/selectSticker');
+    },
+    function (session, results) {
+
     }
 ]);
-bot.dialog('/preguntarEmail', [
+bot.dialog('/selectSticker', [
+    function (session) {
+        for (var item in session.userData.ramdomStickers) {
+            if (session.userData.ramdomStickers.hasOwnProperty(item)) {
+                var heroCard = new builder.HeroCard(session)
+                    .title(session.userData.ramdomStickers[item].NombreEtiqueta)
+                    .subtitle(session.userData.ramdomStickers[item].Debut)
+                    .text(`${session.userData.ramdomStickers[item].NombreEtiqueta} debutó con su selección nacional en el año ${session.userData.ramdomStickers[item].Debut} \nPeso: ${session.userData.ramdomStickers[item].Peso}, Estatura: ${session.userData.ramdomStickers[item].Estatura}`)
+                    .images([
+                        builder.CardImage.create(session, session.userData.ramdomStickers[item].URLImagenModificada)
+                    ])
+                    .buttons([
+                        builder.CardAction.imBack(session, session.userData.ramdomStickers[item].NombreEtiqueta, `Seleccionar a ${session.userData.ramdomStickers[item].NombreEtiqueta}`)
+                    ]);
+                cards.push(heroCard);
+            }
+        }
+        session.send(new builder.Message(session).attachmentLayout(`¿De cúal personaje de fútbol quieres aprender?`, builder.AttachmentLayout.carousel).attachments(cards));
+    },
+    function (session, results) {
+        session.userData.selectedSticker = session.userData.ramdomStickers.find(function (item) {
+            return (item.NombreEtiqueta == results.response);
+        });
+        if (session.userData.selectedSticker) {
+            var heroCard = new builder.HeroCard(session)
+                .title(session.userData.selectedSticker.NombreEtiqueta)
+                .subtitle(session.userData.selectedSticker.Debut)
+                .text(`Te haremos tres preguntas sobre ${session.userData.selectedSticker.NombreEtiqueta}`)
+                .images([
+                    builder.CardImage.create(session, session.userData.selectedSticker.URLImagenModificada)
+                ])
+                .buttons([
+                    builder.CardAction.imBack(session, 'A Jugar', 'A Jugar')
+                ]);
+            session.send(`Te haremos tres preguntas sobre ${session.userData.selectedSticker.NombreEtiqueta}`);
+        }
+        else {
+            session.send(`Lo siento ${session.userData.name}, ${results.response} no es un jugador valido para seleccionar. Vamos a intentarlo de nuevo.`);
+            session.beginDialog('/selectSticker');
+        }
+    }
+]);
+bot.dialog('/askEmail', [
     function (session) {
         builder.Prompts.text(session, `${session.userData.name}, ¿Cúal es tu correo electrónico?`);
     },
@@ -70,7 +136,26 @@ bot.dialog('/preguntarEmail', [
             session.endDialogWithResult(results);
         } else {
             session.send(`Lo siento ${session.userData.name}, ${results.response} no es una dirección de correo valida. Vamos a intentarlo de nuevo.`);
-            session.beginDialog('/preguntarEmail');
+            session.beginDialog('/askEmail');
         }
     }
 ]);
+// Request file with Authentication Header
+var requestWithToken = function (url) {
+    return obtainToken().then(function (token) {
+        return request({
+            url: url,
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/octet-stream'
+            }
+        });
+    });
+};
+
+// Promise for obtaining JWT Token (requested once)
+var obtainToken = Promise.promisify(connector.getAccessToken.bind(connector));
+
+var checkRequiresToken = function (message) {
+    return message.source === 'skype' || message.source === 'msteams';
+};
