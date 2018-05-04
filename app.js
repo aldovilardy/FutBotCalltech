@@ -61,37 +61,55 @@ bot.dialog('/', [
         session.userData.photoDownload = checkRequiresToken(session.message)
             ? requestWithToken(session.message.attachments[0].contentUrl)
             : request(session.message.attachments[0].contentUrl);
-        // Test message By Aldo
+
         session.send(`Mi misión es prepararte para el Mundial Rusia 2018.`);
         // Loading the Random Panini Stickers
-        var options = {
+        request({
             method: 'GET',
             url: 'http://localhost:41731/api/EtiquetasAleatorias',
-            headers:
-                { 'Cache-Control': 'no-cache' }
-        };
-        var cards = [];
-        request(options, function (error, response, body) {
-            if (error) throw new Error(error);
-            else {
-                session.userData.ramdomStickers = JSON.parse(body);
-                console.log(`Loading the ${session.userData.ramdomStickers.length} Random Panini Stickers: \n${body}`);
+            headers: {
+                'Cache-Control': 'no-cache'
             }
-        });
+        },
+            function (error, response, body) {
+                if (error) throw new Error(error);
+                else {
+                    session.userData.ramdomStickers = JSON.parse(body);
+                    console.log(`Loading the ${session.userData.ramdomStickers.length} Random Panini Stickers: \n${body}`);
+                }
+            });
         session.beginDialog('/selectSticker');
+
+        request({
+            method: 'POST',
+            url: 'http://localhost:41731/api/CreaPreguntas',
+            headers:
+                {
+                    'Cache-Control': 'no-cache',
+                    'Content-Type': 'application/json'
+                },
+            body: session.userData.selectedSticker,
+            json: true
+        }, function (error, response, body) {
+            if (error) throw new Error(error);
+            session.userData.questions = body;
+            console.log(body);
+        });
+
     },
     function (session, results) {
-
+        session.endConversation('Gracias');
     }
 ]);
 bot.dialog('/selectSticker', [
     function (session) {
+        var cards = [];
         for (var item in session.userData.ramdomStickers) {
             if (session.userData.ramdomStickers.hasOwnProperty(item)) {
                 var heroCard = new builder.HeroCard(session)
                     .title(session.userData.ramdomStickers[item].NombreEtiqueta)
                     .subtitle(session.userData.ramdomStickers[item].Debut)
-                    .text(`${session.userData.ramdomStickers[item].NombreEtiqueta} debutó con su selección nacional en el año ${session.userData.ramdomStickers[item].Debut} \nPeso: ${session.userData.ramdomStickers[item].Peso}, Estatura: ${session.userData.ramdomStickers[item].Estatura}`)
+                    .text(`${session.userData.ramdomStickers[item].NombreEtiqueta} debutó con su selección nacional en el año ${session.userData.ramdomStickers[item].Debut} pesa ${session.userData.ramdomStickers[item].Peso} y mide ${session.userData.ramdomStickers[item].Estatura}`)
                     .images([
                         builder.CardImage.create(session, session.userData.ramdomStickers[item].URLImagenModificada)
                     ])
@@ -101,12 +119,30 @@ bot.dialog('/selectSticker', [
                 cards.push(heroCard);
             }
         }
-        session.send(new builder.Message(session).attachmentLayout(`¿De cúal personaje de fútbol quieres aprender?`, builder.AttachmentLayout.carousel).attachments(cards));
+        var reply = new builder.Message(session)
+            .attachmentLayout(builder.AttachmentLayout.carousel)
+            .attachments(cards)
+            .text(`¿De cúal personaje de fútbol quieres aprender?`);
+        var retry = new builder.Message(session)
+            .attachmentLayout(builder.AttachmentLayout.carousel)
+            .attachments(cards)
+            .text(`Lo siento ${session.userData.name}, lo que escribiste no es un jugador valido para seleccionar. Vamos a intentarlo de nuevo.`);
+        //session.send(`¿De cúal personaje de fútbol quieres aprender?`);
+        // session.send(reply);
+        builder.Prompts.choice(
+            session,
+            reply,
+            `${session.userData.ramdomStickers[0].NombreEtiqueta}|${session.userData.ramdomStickers[1].NombreEtiqueta}|${session.userData.ramdomStickers[2].NombreEtiqueta}`,
+            {
+                listStyle: builder.ListStyle.none,
+                retryPrompt: (retry)
+            });
     },
     function (session, results) {
         session.userData.selectedSticker = session.userData.ramdomStickers.find(function (item) {
-            return (item.NombreEtiqueta == results.response);
+            return (item.NombreEtiqueta == results.response.entity);
         });
+
         if (session.userData.selectedSticker) {
             var heroCard = new builder.HeroCard(session)
                 .title(session.userData.selectedSticker.NombreEtiqueta)
@@ -118,11 +154,9 @@ bot.dialog('/selectSticker', [
                 .buttons([
                     builder.CardAction.imBack(session, 'A Jugar', 'A Jugar')
                 ]);
-            session.send(`Te haremos tres preguntas sobre ${session.userData.selectedSticker.NombreEtiqueta}`);
-        }
-        else {
-            session.send(`Lo siento ${session.userData.name}, ${results.response} no es un jugador valido para seleccionar. Vamos a intentarlo de nuevo.`);
-            session.beginDialog('/selectSticker');
+
+            var reply = new builder.Message(session).addAttachment(heroCard);
+            session.endDialog(reply);
         }
     }
 ]);
