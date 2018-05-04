@@ -54,7 +54,6 @@ bot.dialog('/', [
     function (session, results) {
         session.userData.email = results.response;
         builder.Prompts.attachment(session, `${session.userData.name}, envíame tu foto por favor.`, { contentTypes: 'image/*' });
-        //builder.Prompts.choice(session, "What language do you code Node using?", ["JavaScript", "CoffeeScript", "TypeScript"]);
     },
     function (session, results) {
         //session.userData.photo.photo.url = `${results.response[0].contentUrl}`;
@@ -66,7 +65,7 @@ bot.dialog('/', [
         // Loading the Random Panini Stickers
         request({
             method: 'GET',
-            url: 'http://localhost:41731/api/EtiquetasAleatorias',
+            url: 'http://b32e2ba9.ngrok.io/api/EtiquetasAleatorias',
             headers: {
                 'Cache-Control': 'no-cache'
             }
@@ -82,7 +81,7 @@ bot.dialog('/', [
 
         request({
             method: 'POST',
-            url: 'http://localhost:41731/api/CreaPreguntas',
+            url: 'http://b32e2ba9.ngrok.io/api/CreaPreguntas',
             headers:
                 {
                     'Cache-Control': 'no-cache',
