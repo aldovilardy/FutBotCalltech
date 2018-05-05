@@ -65,7 +65,7 @@ bot.dialog('/', [
         // Loading the Random Panini Stickers
         request({
             method: 'GET',
-            url: 'http://b32e2ba9.ngrok.io/api/EtiquetasAleatorias',
+            url: 'http://13a60c3b.ngrok.io/FutBotDataBaseWebAPI/api/EtiquetasAleatorias',
             headers: {
                 'Cache-Control': 'no-cache'
             }
@@ -81,7 +81,7 @@ bot.dialog('/', [
 
         request({
             method: 'POST',
-            url: 'http://b32e2ba9.ngrok.io/api/CreaPreguntas',
+            url: 'http://13a60c3b.ngrok.io/FutBotDataBaseWebAPI/api/CreaPreguntas',
             headers:
                 {
                     'Cache-Control': 'no-cache',
