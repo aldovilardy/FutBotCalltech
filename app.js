@@ -65,7 +65,7 @@ bot.dialog('/', [
         // Loading the Random Panini Stickers
         request({
             method: 'GET',
-            url: 'http://13a60c3b.ngrok.io/FutBotDataBaseWebAPI/api/EtiquetasAleatorias',
+            url: 'http://181.48.138.26/FutBotDataBaseWebAPI/api/EtiquetasAleatorias',
             headers: {
                 'Cache-Control': 'no-cache'
             }
@@ -75,13 +75,17 @@ bot.dialog('/', [
                 else {
                     session.userData.ramdomStickers = JSON.parse(body);
                     console.log(`Loading the ${session.userData.ramdomStickers.length} Random Panini Stickers: \n${body}`);
+                    session.beginDialog('/selectSticker');
                 }
             });
-        session.beginDialog('/selectSticker');
+
+    },
+    function (session, results) {
+        session.userData.score = 0;
 
         request({
             method: 'POST',
-            url: 'http://13a60c3b.ngrok.io/FutBotDataBaseWebAPI/api/CreaPreguntas',
+            url: 'http://181.48.138.26/FutBotDataBaseWebAPI/api/CreaPreguntas',
             headers:
                 {
                     'Cache-Control': 'no-cache',
@@ -92,12 +96,189 @@ bot.dialog('/', [
         }, function (error, response, body) {
             if (error) throw new Error(error);
             session.userData.questions = body;
-            console.log(body);
+            console.log(`Loading the Questions of ${session.userData.selectedSticker.NombreEtiqueta} Panini Sticker: \n${body}`);
+            session.beginDialog('/askQuestions');
         });
-
     },
-    function (session, results) {
+    function(session, results){
         session.endConversation('Gracias');
+    }
+]);
+bot.dialog('/askQuestions', [
+    function (session, results) {
+        var herocard = 
+        new builder.HeroCard(session)
+            .title(`PRIMERA PREGUNTA`)
+            .subtitle(`Trivia Mundialista Rusia 2018 by Calltech S.A.`)
+            .text(`${session.userData.questions[0].Statement}`)
+            .images([
+                builder.CardImage.create(session, session.userData.selectedSticker.URLImagenModificada)
+            ])
+            .buttons([
+                builder.CardAction.imBack(session, session.userData.questions[0].Answers[0].Answer, `1) ${session.userData.questions[0].Answers[0].Answer}`),
+                builder.CardAction.imBack(session, session.userData.questions[0].Answers[1].Answer, `2) ${session.userData.questions[0].Answers[1].Answer}`),
+                builder.CardAction.imBack(session, session.userData.questions[0].Answers[2].Answer, `3) ${session.userData.questions[0].Answers[2].Answer}`)
+            ]);
+        var questionMessage = new builder.Message(session).addAttachment(herocard);
+        var questionRetry = new builder.Message(session).addAttachment(herocard);
+        questionRetry.text(`Lo siento las preguntas son de selección múltiple, por favor selecciona una de las respuestas habilitadas para la siguiente pregunta: \n${session.userData.questions[0].Statement}`);
+        builder.Prompts.choice(
+            session,
+            questionMessage,
+            [
+                session.userData.questions[0].Answers[0].Answer, 
+                session.userData.questions[0].Answers[1].Answer, 
+                session.userData.questions[0].Answers[2].Answer],
+            {
+                listStyle: builder.ListStyle.none,
+                retryPrompt: (questionRetry)
+            });
+    },
+    function(session, results){
+        var answer = session.userData.questions[0].Answers.find(function (item) {
+            return (item.Answer == results.response.entity)
+        });
+        session.userData.score += answer.Flag;
+
+        var heroCard = new builder.HeroCard(session)
+        .title(`SEGUNDA PREGUNTA`)
+        .subtitle(`Trivia Mundialista Rusia 2018 by Calltech S.A.`)
+        .text(`${session.userData.questions[1].Statement}`)
+        .images([
+            builder.CardImage.create(session, session.userData.selectedSticker.URLImagenModificada)
+        ])
+        .buttons([
+            builder.CardAction.imBack(session, session.userData.questions[1].Answers[0].Answer, `1) ${session.userData.questions[1].Answers[0].Answer}`),
+            builder.CardAction.imBack(session, session.userData.questions[1].Answers[1].Answer, `2) ${session.userData.questions[1].Answers[1].Answer}`),
+            builder.CardAction.imBack(session, session.userData.questions[1].Answers[2].Answer, `3) ${session.userData.questions[1].Answers[2].Answer}`)
+        ]);
+        var questionMessage = new builder.Message(session).addAttachment(heroCard);
+        var questionRetry = new builder.Message(session).addAttachment(heroCard);;
+        questionRetry.text(`Lo siento las preguntas son de selección múltiple, por favor selecciona una de las respuestas habilitadas para la siguiente pregunta: \n${session.userData.questions[1].Statement}`);
+        builder.Prompts.choice(
+            session,
+            questionMessage,
+            [
+                session.userData.questions[1].Answers[0].Answer, 
+                session.userData.questions[1].Answers[1].Answer, 
+                session.userData.questions[1].Answers[2].Answer],
+            {
+                listStyle: builder.ListStyle.none,
+                retryPrompt: (questionRetry)
+            });
+    },
+    function(session, results){
+        var answer = session.userData.questions[1].Answers.find(function (item) {
+            return (item.Answer == results.response.entity)
+        });
+        session.userData.score += answer.Flag;
+
+        var heroCard = new builder.HeroCard(session)
+        .title(`TERCERA PREGUNTA`)
+        .subtitle(`Trivia Mundialista Rusia 2018 by Calltech S.A.`)
+        .text(`${session.userData.questions[2].Statement}`)
+        .images([
+            builder.CardImage.create(session, session.userData.selectedSticker.URLImagenModificada)
+        ])
+        .buttons([
+            builder.CardAction.imBack(session, session.userData.questions[2].Answers[0].Answer, `1) ${session.userData.questions[2].Answers[0].Answer}`),
+            builder.CardAction.imBack(session, session.userData.questions[2].Answers[1].Answer, `2) ${session.userData.questions[2].Answers[1].Answer}`),
+            builder.CardAction.imBack(session, session.userData.questions[2].Answers[2].Answer, `3) ${session.userData.questions[2].Answers[2].Answer}`)
+        ]);
+        var questionMessage = new builder.Message(session).addAttachment(heroCard);
+        var questionRetry = new builder.Message(session).addAttachment(heroCard);;
+        questionRetry.text(`Lo siento las preguntas son de selección múltiple, por favor selecciona una de las respuestas habilitadas para la siguiente pregunta: \n${session.userData.questions[2].Statement}`);
+        builder.Prompts.choice(
+            session,
+            questionMessage,
+            [
+                session.userData.questions[2].Answers[0].Answer, 
+                session.userData.questions[2].Answers[1].Answer, 
+                session.userData.questions[2].Answers[2].Answer],
+            {
+                listStyle: builder.ListStyle.none,
+                retryPrompt: (questionRetry)
+            });
+    },
+    function(session, results){
+        var answer = session.userData.questions[2].Answers.find(function (item) {
+            return (item.Answer == results.response.entity)
+        });
+        session.userData.score += answer.Flag;
+        var scoreHeroCard;
+        switch (session.userData.score) {
+            case 3:
+                scoreHeroCard = new builder.HeroCard(session)
+                    .title('¡Ganaste!')
+                    .subtitle(`Tu puntaje: ${session.userData.score}/3`)
+                    .text(` `)
+                    .images([
+                        builder.CardImage.create(session, 'https://image.ibb.co/dnQvk7/tiz_594_AA724.gif')
+                    ])
+                    .buttons([
+                        builder.CardAction.imBack(session, 'OK', 'OK')
+                    ]);
+                break;
+            case 2:
+                scoreHeroCard = new builder.HeroCard(session)
+                    .title('¡Puedes mejorar!')
+                    .subtitle(`Tu puntaje: ${session.userData.score}/3`)
+                    .text(` `)
+                    .images([
+                        builder.CardImage.create(session, 'https://image.ibb.co/dnQvk7/tiz_594_AA724.gif')
+                    ])
+                    .buttons([
+                        builder.CardAction.imBack(session, 'OK', 'OK')
+                    ]);
+                break;
+            default:
+                scoreHeroCard = new builder.HeroCard(session)
+                    .title('¡Perdiste!')
+                    .subtitle(`Tu puntaje: ${session.userData.score}/3`)
+                    .text(` `)
+                    .images([
+                        builder.CardImage.create(session, 'https://image.ibb.co/dnQvk7/tiz_594_AA724.gif')
+                    ])
+                    .buttons([
+                        builder.CardAction.imBack(session, 'OK', 'OK')
+                    ]);
+                break;
+        }
+        
+        var curiousHeroCard = new builder.HeroCard(session)
+            .title(`Dato curioso`)
+            .subtitle(session.userData.selectedSticker.NombreEtiqueta)
+            .text(`Sabías que ${session.userData.selectedSticker.DatoCurioso}`)
+            .images([
+                builder.CardImage.create(session, session.userData.selectedSticker.URLImagen)
+            ])
+            .buttons([
+                builder.CardAction.imBack(session, 'OK', 'OK')
+            ]);
+        
+        var tarjetas = [scoreHeroCard, curiousHeroCard];
+        var msj = new builder.Message(session).attachmentLayout(builder.AttachmentLayout.carousel).attachments(tarjetas);
+        builder.Prompts.choice(session, msj,"OK|OK",{listStyle: builder.listStyle.none, retryPrompt:(msj)});
+    },
+    function(session, results){
+        // //Logica para generar mona del usuario
+        // var monaRequest;
+        // request({
+        //     method: 'POST',
+        //     url: 'http://181.48.138.26/FutBotDataBaseWebAPI/api/CreaMona',
+        //     headers:
+        //         {
+        //             'Cache-Control': 'no-cache',
+        //             'Content-Type': 'application/json'
+        //         },
+        //     body: session.userData.selectedSticker,
+        //     json: true
+        // }, function (error, response, body) {
+        //     if (error) throw new Error(error);
+        //     session.userData.questions = body;
+        //     console.log(`Loading the Questions of ${session.userData.selectedSticker.NombreEtiqueta} Panini Sticker: \n${body}`);
+        //     session.beginDialog('/askQuestions');
+        // });
     }
 ]);
 bot.dialog('/selectSticker', [
@@ -123,15 +304,13 @@ bot.dialog('/selectSticker', [
             .attachments(cards)
             .text(`¿De cúal personaje de fútbol quieres aprender?`);
         var retry = new builder.Message(session)
-            .attachmentLayout(builder.AttachmentLayout.carousel)
-            .attachments(cards)
-            .text(`Lo siento ${session.userData.name}, lo que escribiste no es un jugador valido para seleccionar. Vamos a intentarlo de nuevo.`);
-        //session.send(`¿De cúal personaje de fútbol quieres aprender?`);
-        // session.send(reply);
+        .attachmentLayout(builder.AttachmentLayout.carousel)
+        .attachments(cards)
+        .text(`Lo siento ${session.userData.name}, lo que escribiste no es un jugador valido para seleccionar. Vamos a intentarlo de nuevo.`);
         builder.Prompts.choice(
             session,
             reply,
-            `${session.userData.ramdomStickers[0].NombreEtiqueta}|${session.userData.ramdomStickers[1].NombreEtiqueta}|${session.userData.ramdomStickers[2].NombreEtiqueta}`,
+            [session.userData.ramdomStickers[0].NombreEtiqueta, session.userData.ramdomStickers[1].NombreEtiqueta, session.userData.ramdomStickers[2].NombreEtiqueta],
             {
                 listStyle: builder.ListStyle.none,
                 retryPrompt: (retry)
@@ -155,7 +334,15 @@ bot.dialog('/selectSticker', [
                 ]);
 
             var reply = new builder.Message(session).addAttachment(heroCard);
-            session.endDialog(reply);
+            builder.Prompts.choice(
+                session,
+                reply,
+                ['A Jugar'],
+                {
+                    listStyle: builder.ListStyle.none,
+                    retryPrompt: (reply)
+                });
+            // session.endDialog();
         }
     }
 ]);
