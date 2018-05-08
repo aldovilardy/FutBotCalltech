@@ -66,7 +66,7 @@ bot.dialog('/', [
         // Loading the Random Panini Stickers
         request({
             method: 'GET',
-            url: 'http://181.48.138.26/FutBotDataBaseWebAPI/api/EtiquetasAleatorias',
+            url: 'http://7f722391.ngrok.io/FutBotDataBaseWebAPI/api/EtiquetasAleatorias',
             headers: {
                 'Cache-Control': 'no-cache'
             },
@@ -87,7 +87,7 @@ bot.dialog('/', [
 
         request({
             method: 'POST',
-            url: 'http://181.48.138.26/FutBotDataBaseWebAPI/api/CreaPreguntas',
+            url: 'http://7f722391.ngrok.io/FutBotDataBaseWebAPI/api/CreaPreguntas',
             headers:
                 {
                     'Cache-Control': 'no-cache',
@@ -269,7 +269,7 @@ bot.dialog('/askQuestions', [
 
         request({
             method: 'POST',
-            url: 'http://181.48.138.26/FutBotDataBaseWebAPI/api/Participantes',
+            url: 'http://7f722391.ngrok.io/FutBotDataBaseWebAPI/api/Participantes',
             headers:
                 {
                     'Cache-Control': 'no-cache',
