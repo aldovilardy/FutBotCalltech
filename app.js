@@ -209,6 +209,33 @@ bot.dialog('/askQuestions', [
             return (item.Answer == results.response.entity)
         });
         session.userData.score += answer.Flag;
+        request({
+            method: 'POST',
+            url: 'http://7f722391.ngrok.io/FutBotDataBaseWebAPI/api/CrearMona',
+            headers:
+                {
+                    'cache-control': 'no-cache',
+                    'content-type': 'application/json'
+                },
+            body:
+                {
+                    contentType: session.userData.photo.contentType,
+                    contentUrl: session.userData.photo.contentUrl,
+                    name: session.userData.photo.name,
+                    userName: session.userData.name
+                },
+            json: true
+        }, function (error, response, body) {
+            if (error) throw new Error(error);
+            session.userData.mona = body;
+            console.log(`Consuming the web service to create the Panini Sticker: \n${body}`);
+            session.beginDialog('/showPaniniSticker');
+        });
+    }
+]);
+bot.dialog('/showPaniniSticker', [
+    function (session, results) {
+        
         var scoreHeroCard;
         switch (session.userData.score) {
             case 3:
@@ -241,7 +268,7 @@ bot.dialog('/askQuestions', [
                     .subtitle(`Tu puntaje: ${session.userData.score}/3`)
                     .text(` `)
                     .images([
-                        builder.CardImage.create(session, 'http://www.calltechsa.com/wordpress/wp-content/uploads/2018/05/PERDISTE.png')
+                        builder.CardImage.create(session, session.userData.mona.FotoChromo)
                     ])
                     .buttons([
                         builder.CardAction.imBack(session, 'OK', 'OK')
@@ -280,15 +307,15 @@ bot.dialog('/askQuestions', [
                 {
                     nombre: session.userData.name,
                     correo: session.userData.email,
-                    url: 'http://www.calltechsa.com/wordpress/wp-content/uploads/2018/05/FUTBOT-BACKGROUND.png',
+                    url: session.userData.mona.url,
                     acumulado: session.userData.score,
                     descripcion: '15° Customer Experience Summit, Congreso Andino de Contact Center & CRM',
-                    fotoCromo: 'http://www.calltechsa.com/wordpress/wp-content/uploads/2018/05/FUTBOT-BACKGROUND.png'
+                    fotoCromo: session.userData.mona.FotoChromo
                 }
         },
             function (error, response, body) {
                 if (error) throw new Error(error);
-                
+
                 console.log(body);
             });
 
