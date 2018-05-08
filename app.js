@@ -268,7 +268,7 @@ bot.dialog('/showPaniniSticker', [
                     .subtitle(`Tu puntaje: ${session.userData.score}/3`)
                     .text(` `)
                     .images([
-                        builder.CardImage.create(session, session.userData.mona.FotoChromo)
+                        builder.CardImage.create(session, 'http://www.calltechsa.com/wordpress/wp-content/uploads/2018/05/PERDISTE.png')
                     ])
                     .buttons([
                         builder.CardAction.imBack(session, 'OK', 'OK')
@@ -330,7 +330,7 @@ bot.dialog('/showPaniniSticker', [
             .subtitle(`${currentDate.getFullYear()}`)
             .text(`${bye}`)
             .images([
-                builder.CardImage.create(session, session.userData.selectedSticker.URLImagen)
+                builder.CardImage.create(session, session.userData.mona.FotoChromo)
             ]);
         var msj = new builder.Message(session).addAttachment(heroCard);
         session.endDialog(msj);
