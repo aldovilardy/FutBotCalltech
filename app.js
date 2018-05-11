@@ -66,7 +66,7 @@ bot.dialog('/', [
         // Loading the Random Panini Stickers
         request({
             method: 'GET',
-            url: 'http://7f722391.ngrok.io/FutBotDataBaseWebAPI/api/EtiquetasAleatorias',
+            url: 'http://181.48.138.26/FutBotDataBaseWebAPI/api/EtiquetasAleatorias',
             headers: {
                 'Cache-Control': 'no-cache'
             },
@@ -87,7 +87,7 @@ bot.dialog('/', [
 
         request({
             method: 'POST',
-            url: 'http://7f722391.ngrok.io/FutBotDataBaseWebAPI/api/CreaPreguntas',
+            url: 'http://181.48.138.26/FutBotDataBaseWebAPI/api/CreaPreguntas',
             headers:
                 {
                     'Cache-Control': 'no-cache',
@@ -211,7 +211,7 @@ bot.dialog('/askQuestions', [
         session.userData.score += answer.Flag;
         request({
             method: 'POST',
-            url: 'http://7f722391.ngrok.io/FutBotDataBaseWebAPI/api/CrearMona',
+            url: 'http://181.48.138.26/FutBotDataBaseWebAPI/api/CrearMona',
             headers:
                 {
                     'cache-control': 'no-cache',
@@ -296,7 +296,7 @@ bot.dialog('/showPaniniSticker', [
 
         request({
             method: 'POST',
-            url: 'http://7f722391.ngrok.io/FutBotDataBaseWebAPI/api/Participantes',
+            url: 'http://181.48.138.26/FutBotDataBaseWebAPI/api/Participantes',
             headers:
                 {
                     'Cache-Control': 'no-cache',
