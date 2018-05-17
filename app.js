@@ -34,13 +34,13 @@ server.post('/api/messages', connector.listen());
 
 var tableName = 'botdata';
 // Commented by Aldo to debbug 
-// var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
-// var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
+var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
+var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
 
 // Create your bot with a function to receive messages from the user
 var bot = new builder.UniversalBot(connector);
 // Commented by Aldo to debbug 
-// bot.set('storage', tableStorage);
+bot.set('storage', tableStorage);
 
 bot.dialog('/', [
     function (session) {
